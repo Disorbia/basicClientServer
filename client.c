@@ -47,23 +47,24 @@ int main(){
 
 		char input[1024];
 		scanf("%s",input);
+		send(clientSocket,input,1024,0);
 
-		if(strcmp(input,"LIST") == 0){
+		// if(strcmp(input,"LIST") == 0){
 
-			send(clientSocket,input,1024,0);
+		// 	send(clientSocket,input,1024,0);
 
-		}
-		if(strcmp(input,"SEND") == 0){
+		// }
+		// if(strcmp(input,"SEND") == 0){
 
-			send(clientSocket,input,1024,0);
+		// 	send(clientSocket,input,1024,0);
 			
-			scanf("%s",input);
-			send(clientSocket,input,1024,0);
+		// 	scanf("%s",input);
+		// 	send(clientSocket,input,1024,0);
 			
-			scanf("%[^\n]s",input);
-			send(clientSocket,input,1024,0);
+		// 	scanf("%[^\n]s",input);
+		// 	send(clientSocket,input,1024,0);
 
-		}
+		// }
 
 	}
 

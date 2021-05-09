@@ -10,6 +10,7 @@
 #include <arpa/inet.h>
 
 #include "defs.h"
+#include "list.h"
 
 int clientCount = 0;
 
@@ -22,19 +23,14 @@ struct client{
 	int sockID;
 	struct sockaddr_in clientAddr;
 	int len;
-
+	struct song_list* songs;
 };
 
 struct client Client[1024];
 pthread_t thread[1024];
 
 void printMenu(char *songName){
-	printf("Now Playing :: %s\n", songName);
-	printf("========= MENU =========\n");
-	printf("%s 			   :: Show song queue\n", LIST);
-	printf("%s <SONG_NAME> :: Queue next song\n", PLAY);
-	printf("%s 			   :: Vote to skip song\n", NEXT);
-	printf("%s 			   :: Vote to pause song\n", PAUSE);
+
 }
 
 void * doNetworking(void * ClientDetail){
@@ -45,13 +41,25 @@ void * doNetworking(void * ClientDetail){
 
 	printf("Client %d connected.\n",index + 1);
 	printMenu(NULL);
+	char *menu = (char*)malloc(100 * sizeof(char));
+	sprintf(menu, "Now Playing :: %s\n========= MENU =========\n%s 			   :: Show song queue\n%s <SONG_NAME> :: Queue next song\n%s 			   :: Vote to skip song\n%s 			   :: Vote to pause song\n", LIST, PLAY, NEXT, PAUSE);
+	// printf("Now Playing :: %s\n", songName);
+	// printf("========= MENU =========\n");
+	// printf("%s 			   :: Show song queue\n", LIST);
+	// printf("%s <SONG_NAME> :: Queue next song\n", PLAY);
+	// printf("%s 			   :: Vote to skip song\n", NEXT);
+	// printf("%s 			   :: Vote to pause song\n", PAUSE);
+	send(clientSocket,menu,1024,0);
+
 	while(1){
 		char data[1024];
 		int read = recv(clientSocket,data,1024,0);//Wait for client choice
 		data[read] = '\0';
 
 		char output[1024];
-
+		if(!strncmp(data, PLAY, 5)){
+			insertFirst(clientDetail->songs, allocSong(clientDetail->index, data, data));
+		}
 		if(strcmp(data,"LIST") == 0){
 
 			int l = 0;
@@ -88,6 +96,9 @@ void * doNetworking(void * ClientDetail){
 }
 
 void main(){
+	struct song_list* songs = (struct song_list*) malloc(sizeof(struct song_list)); //Song Queue
+	initList(songs); //Init queue
+
 	int serverSocket = socket(PF_INET, SOCK_STREAM, 0);
 
 	struct sockaddr_in serverAddr;
