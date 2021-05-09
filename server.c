@@ -28,6 +28,15 @@ struct client{
 struct client Client[1024];
 pthread_t thread[1024];
 
+void printMenu(char *songName){
+	printf("Now Playing :: %s\n", songName);
+	printf("========= MENU =========\n");
+	printf("%s 			   :: Show song queue\n", LIST);
+	printf("%s <SONG_NAME> :: Queue next song\n", PLAY);
+	printf("%s 			   :: Vote to skip song\n", NEXT);
+	printf("%s 			   :: Vote to pause song\n", PAUSE);
+}
+
 void * doNetworking(void * ClientDetail){
 
 	struct client* clientDetail = (struct client*) ClientDetail;
@@ -35,7 +44,7 @@ void * doNetworking(void * ClientDetail){
 	int clientSocket = clientDetail -> sockID;
 
 	printf("Client %d connected.\n",index + 1);
-	//TODO: Send current song & menu right here
+	printMenu(NULL);
 	while(1){
 		char data[1024];
 		int read = recv(clientSocket,data,1024,0);//Wait for client choice
