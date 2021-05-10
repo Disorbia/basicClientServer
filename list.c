@@ -5,22 +5,22 @@
 
 /** Assigned by: Sharon Bron-Sobol, 206171423 **/
 
-void initList(struct song_list *lst)
+void initList(song_list *lst)
 {
 	lst->head = lst->tail = NULL;	
 }
 
 //is list empty
-int isEmpty(struct song_list *lst)
+int isEmpty(song_list *lst)
 {
 	return lst->head == NULL;
 }
 
 //return amount of games in the list
-int length(struct song_list *lst)
+int length(song_list *lst)
 {
 	int length = 0;
-	struct song *current;
+	song *current;
 	
 	for(current = lst->head; current != NULL; current = current->next)
 		length++;
@@ -29,9 +29,9 @@ int length(struct song_list *lst)
 }
 
 //allocate a new song
-struct song *allocSong(int User, char Name[20], char Artist[20])
+song* allocSong(int User, char Name[20], char Artist[20])
 {
-	struct song* item = (struct song*) malloc(sizeof(struct song));
+	song* item = (song*) malloc(sizeof(9999));
 	strncpy(item->Name, Name, 20);
 	strncpy(item->Artist, Artist, 20);
 
@@ -52,7 +52,7 @@ struct song *allocSong(int User, char Name[20], char Artist[20])
 }*/
 
 //insert item at the first location
-int insertFirst(struct song_list *lst, struct song *item)
+int insertFirst(song_list *lst, song *item)
 {
 	if (item != NULL)
 	{
@@ -107,13 +107,13 @@ int insertFirst(struct song_list *lst, struct song *item)
 }*/
 
 //delete first item
-int deleteFirst(struct song_list *lst)
+int deleteFirst(song_list *lst)
 {	
 	//if list is empty there is nothing to delete
 	if (!isEmpty(lst))
 	{
 		//save reference to first link
-		struct song *temp = lst->head;
+		song *temp = lst->head;
 
 		//if only one link
 		if(temp->next == NULL)
@@ -132,13 +132,13 @@ int deleteFirst(struct song_list *lst)
 }
  
 //delete link at the last location
-int deleteLast(struct song_list *lst)
+int deleteLast(song_list *lst)
 {
 	//if list is empty there is nothing to delete
 	if (!isEmpty(lst))
 	{
 		//save reference to last link
-		struct song *temp = lst->tail;
+		song *temp = lst->tail;
 
 		//if only one link
 		if(temp->prev == NULL)
@@ -157,7 +157,7 @@ int deleteLast(struct song_list *lst)
 }
 
 //delete link from list
-int deleteLink(struct song_list *lst, struct song *link)
+int deleteLink(song_list *lst, song *link)
 {
 	if (!isEmpty(lst))
 	{
@@ -178,7 +178,7 @@ int deleteLink(struct song_list *lst, struct song *link)
 }
 
 //insert a new item before link
-int insertBefore(struct song_list *lst, struct song *item, struct song *link)
+int insertBefore(song_list *lst, song *item, song *link)
 {
 
 	if (!isEmpty(lst))

@@ -18,12 +18,11 @@ static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
 struct client{
-
 	int index;
 	int sockID;
 	struct sockaddr_in clientAddr;
 	int len;
-	struct song_list* songs;
+	song_list *songs;
 };
 
 struct client Client[1024];
@@ -34,7 +33,6 @@ void printMenu(char *songName){
 }
 
 void * doNetworking(void * ClientDetail){
-
 	struct client* clientDetail = (struct client*) ClientDetail;
 	int index = clientDetail -> index;
 	int clientSocket = clientDetail -> sockID;
@@ -43,14 +41,7 @@ void * doNetworking(void * ClientDetail){
 	printMenu(NULL);
 	char *menu = (char*)malloc(100 * sizeof(char));
 	sprintf(menu, "Now Playing :: %s\n========= MENU =========\n%s 			   :: Show song queue\n%s <SONG_NAME> :: Queue next song\n%s 			   :: Vote to skip song\n%s 			   :: Vote to pause song\n", LIST, PLAY, NEXT, PAUSE);
-	// printf("Now Playing :: %s\n", songName);
-	// printf("========= MENU =========\n");
-	// printf("%s 			   :: Show song queue\n", LIST);
-	// printf("%s <SONG_NAME> :: Queue next song\n", PLAY);
-	// printf("%s 			   :: Vote to skip song\n", NEXT);
-	// printf("%s 			   :: Vote to pause song\n", PAUSE);
 	send(clientSocket,menu,1024,0);
-
 	while(1){
 		char data[1024];
 		int read = recv(clientSocket,data,1024,0);//Wait for client choice
@@ -58,7 +49,8 @@ void * doNetworking(void * ClientDetail){
 
 		char output[1024];
 		if(!strncmp(data, PLAY, 5)){
-			insertFirst(clientDetail->songs, allocSong(clientDetail->index, data, data));
+			song* t_song = (song*) malloc(sizeof(song));
+			insertFirst(clientDetail->songs, t_song);
 		}
 		if(strcmp(data,"LIST") == 0){
 
@@ -96,7 +88,9 @@ void * doNetworking(void * ClientDetail){
 }
 
 void main(){
-	struct song_list* songs = (struct song_list*) malloc(sizeof(struct song_list)); //Song Queue
+	song_list *songs = (song_list*) malloc(sizeof(song_list)); //Song Queue
+	//song* t_song = (song*) malloc(sizeof(song));
+
 	initList(songs); //Init queue
 
 	int serverSocket = socket(PF_INET, SOCK_STREAM, 0);
@@ -120,6 +114,7 @@ void main(){
 
 		Client[clientCount].sockID = accept(serverSocket, (struct sockaddr*) &Client[clientCount].clientAddr, &Client[clientCount].len);
 		Client[clientCount].index = clientCount;
+		Client[clientCount].songs = songs;
 
 		pthread_create(&thread[clientCount], NULL, doNetworking, (void *) &Client[clientCount]);
 

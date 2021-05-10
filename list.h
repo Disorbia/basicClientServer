@@ -1,41 +1,39 @@
 
 /** Assigned by: Sharon Bron-Sobol, 206171423 **/
 
-typedef char list_type;
-
-struct song 
+typedef struct song 
 {
 	int User;
 	char Name[20];
 	char Artist[20];
    	struct song *next;
    	struct song *prev;
-};
+}song;
 
-struct song_list
+typedef struct song_list
 {
-	struct song *head;
-	struct song *tail;
-};
+	song *head;
+	song *tail;
+}song_list;
 
-void initList(struct song_list *lst);
+void initList(song_list *lst);
 
-int isEmpty(struct song_list *lst);
+int isEmpty(song_list *lst);
 
-int length(struct song_list *lst);
+int length( song_list *lst);
 
-struct song* allocSong(int User, char Name[20], char Artist[20]);
+ song* allocSong(int User, char Name[20], char Artist[20]);
 
 //song *getLinkBySerial(song_list *lst, int serial);
 
-int insertFirst(struct song_list *lst, struct song *item);
+int insertFirst(song_list *lst, song *item);
 
 //int insertSong(struct song_list *lst, struct song *item);
 
-int deleteFirst(struct song_list *lst);
+int deleteFirst(song_list *lst);
 
-int deleteLast(struct song_list *lst);
+int deleteLast(song_list *lst);
 
-int deleteLink(struct song_list *lst, struct song *link);
+int deleteLink(song_list *lst, song *link);
 
-int insertBefore(struct song_list *lst, struct song *item, struct song *link);
+int insertBefore(song_list *lst, song *item, song *link);
