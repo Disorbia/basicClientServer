@@ -23,63 +23,64 @@ struct client{
 	struct sockaddr_in clientAddr;
 	int len;
 	song_list *songs;
+	song *nowPlaying;
 };
 
 struct client Client[1024];
 pthread_t thread[1024];
 
-void printMenu(char *songName){
+song * getNowPlaying(song_list *songs){//TODO: Add real cycling of songs
+	return songs->head;
+}
 
+void sendSongList(int clientSocket, song_list *songs){
+	song *p = songs->head;
+	if(p != NULL){
+		while(1){
+			send(clientSocket,p->Name,1024,0);
+			if(p == songs->tail)
+				break;
+			p = p->next;
+		}}
 }
 
 void * doNetworking(void * ClientDetail){
 	struct client* clientDetail = (struct client*) ClientDetail;
 	int index = clientDetail -> index;
 	int clientSocket = clientDetail -> sockID;
-
 	printf("Client %d connected.\n",index + 1);
-	printMenu(NULL);
-	char *menu = (char*)malloc(100 * sizeof(char));
-	sprintf(menu, "Now Playing :: %s\n========= MENU =========\n%s 			   :: Show song queue\n%s <SONG_NAME> :: Queue next song\n%s 			   :: Vote to skip song\n%s 			   :: Vote to pause song\n", LIST, PLAY, NEXT, PAUSE);
-	send(clientSocket,menu,1024,0);
+
 	while(1){
+
+		char *menu = (char*)malloc(500 * sizeof(char));	
+		sprintf(menu, "Now Playing :: %s\n========= MENU =========\n%s 			   :: Show song queue\n%s <SONG_NAME>-<ARTIST_NAME>:: Queue next song\n%s 			   :: Vote to skip song\n%s 			   :: Vote to pause song\n","NULL", LIST, PLAY, NEXT, PAUSE);
+		send(clientSocket,menu,1024,0);
+
 		char data[1024];
-		int read = recv(clientSocket,data,1024,0);//Wait for client choice
+		int read = recv(clientSocket,data,1024,0);//Wait for client choice		
 		data[read] = '\0';
 
-		char output[1024];
 		if(!strncmp(data, PLAY, 5)){
-			song* t_song = (song*) malloc(sizeof(song));
-			insertFirst(clientDetail->songs, t_song);
+			read = recv(clientSocket,data,40,0);//Song name
+			insertLast(clientDetail->songs, allocSong(clientDetail->index, data));
 		}
-		if(strcmp(data,"LIST") == 0){
-
-			int l = 0;
-
-			for(int i = 0 ; i < clientCount ; i ++){
-
-				if(i != index)
-					l += snprintf(output + l,1024,"Client %d is at socket %d.\n",i + 1,Client[i].sockID);
-
-			}
-
-			send(clientSocket,output,1024,0);
-			continue;
-
+		if(!strncmp(data,LIST, 5)){
+			sendSongList(clientSocket, clientDetail->songs);
 		}
-		if(strcmp(data,"SEND") == 0){
 
-			read = recv(clientSocket,data,1024,0);
-			data[read] = '\0';
 
-			int id = atoi(data) - 1;
+		// if(strcmp(data,"SEND") == 0){
 
-			read = recv(clientSocket,data,1024,0);
-			data[read] = '\0';
+		// 	read = recv(clientSocket,data,1024,0);
+		// 	data[read] = '\0';
 
-			send(Client[id].sockID,data,1024,0);			
+		// 	int id = atoi(data) - 1;
 
-		}
+		// 	read = recv(clientSocket,data,1024,0);
+		// 	data[read] = '\0';
+
+		// 	send(Client[id].sockID,data,1024,0);			
+		// }
 
 	}
 
@@ -88,13 +89,13 @@ void * doNetworking(void * ClientDetail){
 }
 
 void main(){
-	song_list *songs = (song_list*) malloc(sizeof(song_list)); //Song Queue
+	song_list *songs_l = (song_list*) malloc(sizeof(song_list)); //Song Queue
 	//song* t_song = (song*) malloc(sizeof(song));
 
-	initList(songs); //Init queue
+	initList(songs_l); //Init queue
 
 	int serverSocket = socket(PF_INET, SOCK_STREAM, 0);
-
+	setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int));
 	struct sockaddr_in serverAddr;
 
 	serverAddr.sin_family = AF_INET;
@@ -114,7 +115,9 @@ void main(){
 
 		Client[clientCount].sockID = accept(serverSocket, (struct sockaddr*) &Client[clientCount].clientAddr, &Client[clientCount].len);
 		Client[clientCount].index = clientCount;
-		Client[clientCount].songs = songs;
+		Client[clientCount].songs = songs_l;
+		Client[clientCount].nowPlaying = songs_l->head;
+
 
 		pthread_create(&thread[clientCount], NULL, doNetworking, (void *) &Client[clientCount]);
 

@@ -29,30 +29,19 @@ int length(song_list *lst)
 }
 
 //allocate a new song
-song* allocSong(int User, char Name[20], char Artist[20])
+song* allocSong(int User, char Name[40])
 {
-	song* item = (song*) malloc(sizeof(9999));
-	strncpy(item->Name, Name, 20);
-	strncpy(item->Artist, Artist, 20);
+	song* item = (song*) malloc(sizeof(song));
+	strncpy(item->Name, Name, 40);
 
 	item->next = NULL;
 	item->prev = NULL;
 
 	return item;
 }
-//return item by serial property
-/*song *getLinkBySerial(song_list *lst, int serial){
-	song *p = lst->head;
-	while(p != NULL){
-		if(p->serial == serial)
-			return p;
-		p = p->next;
-	}
-	return NULL;
-}*/
 
 //insert item at the first location
-int insertFirst(song_list *lst, song *item)
+int insertLast(song_list *lst, song *item)
 {
 	if (item != NULL)
 	{
@@ -66,12 +55,16 @@ int insertFirst(song_list *lst, song *item)
 		}
 		else 
 		{
-			//update first prev link
-			lst->head->prev = item;
-			//point item to old first link
+			lst->tail->next = item;
+			item->prev = lst->tail;
 			item->next = lst->head;
+			lst->tail = item;
+			//update first prev link
+			//lst->head->prev = item;
+			//point item to old first link
+			//item->next = lst->head;
 			//point head to new first song
-			lst->head = item;
+			//lst->head = item;
 		}
 		return 1;
 	}
@@ -178,7 +171,7 @@ int deleteLink(song_list *lst, song *link)
 }
 
 //insert a new item before link
-int insertBefore(song_list *lst, song *item, song *link)
+/*int insertBefore(song_list *lst, song *item, song *link)
 {
 
 	if (!isEmpty(lst))
@@ -197,4 +190,4 @@ int insertBefore(song_list *lst, song *item, song *link)
 		return 1;
 	}
 	return 0;
-}
+}*/

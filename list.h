@@ -4,8 +4,7 @@
 typedef struct song 
 {
 	int User;
-	char Name[20];
-	char Artist[20];
+	char Name[40];
    	struct song *next;
    	struct song *prev;
 }song;
@@ -22,11 +21,11 @@ int isEmpty(song_list *lst);
 
 int length( song_list *lst);
 
- song* allocSong(int User, char Name[20], char Artist[20]);
+ song* allocSong(int User, char Name[40]);
 
 //song *getLinkBySerial(song_list *lst, int serial);
 
-int insertFirst(song_list *lst, song *item);
+int insertLast(song_list *lst, song *item);
 
 //int insertSong(struct song_list *lst, struct song *item);
 
