@@ -21,14 +21,14 @@ void * doRecieving(void * sockID){
 		int read = recv(clientSocket,data,1024,0);
 		data[read] = '\0';
 		printf("%s\n",data);
-
 	}
-
 }
 
 int main(){
 
 	int clientSocket = socket(PF_INET, SOCK_STREAM, 0);
+	setsockopt(clientSocket, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int));
+
 
 	struct sockaddr_in serverAddr;
 
@@ -49,23 +49,9 @@ int main(){
 		scanf("%s",input);
 		send(clientSocket,input,1024,0);
 
-		// if(strcmp(input,"LIST") == 0){
-
-		// 	send(clientSocket,input,1024,0);
-
-		// }
-		// if(strcmp(input,"SEND") == 0){
-
-		// 	send(clientSocket,input,1024,0);
-			
-		// 	scanf("%s",input);
-		// 	send(clientSocket,input,1024,0);
-			
-		// 	scanf("%[^\n]s",input);
-		// 	send(clientSocket,input,1024,0);
-
-		// }
-
+		if(!strcmp(input, QUIT)){
+			shutdown(clientSocket, 0);
+		}
 	}
 
 

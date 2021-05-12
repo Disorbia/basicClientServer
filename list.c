@@ -9,7 +9,8 @@
 void initList(song_list *lst)
 {
 	lst->head = lst->tail = lst->nowPlaying = NULL;
-
+	lst->play = 1;
+	lst->skip = 0;
 }
 
 //is list empty

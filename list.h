@@ -14,6 +14,8 @@ typedef struct song_list
 	song *head;
 	song *tail;
 	song *nowPlaying;
+	int play;
+	int skip;
 
 }song_list;
 
