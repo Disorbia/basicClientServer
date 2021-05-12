@@ -8,4 +8,5 @@
 #define PORT 8080
 #define ADDRESS "localhost"
 #define MAX_CONN 5
+#define null "999"
  

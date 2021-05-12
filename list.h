@@ -13,6 +13,8 @@ typedef struct song_list
 {
 	song *head;
 	song *tail;
+	song *nowPlaying;
+
 }song_list;
 
 void initList(song_list *lst);
@@ -26,6 +28,8 @@ int length( song_list *lst);
 //song *getLinkBySerial(song_list *lst, int serial);
 
 int insertLast(song_list *lst, song *item);
+
+void insertNULL(song_list *lst);
 
 //int insertSong(struct song_list *lst, struct song *item);
 

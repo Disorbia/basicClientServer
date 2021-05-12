@@ -2,12 +2,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include "list.h"
+#include "defs.h"
 
 /** Assigned by: Sharon Bron-Sobol, 206171423 **/
 
 void initList(song_list *lst)
 {
-	lst->head = lst->tail = NULL;	
+	lst->head = lst->tail = lst->nowPlaying = NULL;
+
 }
 
 //is list empty
@@ -33,11 +35,19 @@ song* allocSong(int User, char Name[40])
 {
 	song* item = (song*) malloc(sizeof(song));
 	strncpy(item->Name, Name, 40);
-
+	item->User = User;
 	item->next = NULL;
 	item->prev = NULL;
 
 	return item;
+}
+
+void insertNULL(song_list *lst)
+{
+	song* item = (song*) malloc(sizeof(song));
+	strncpy(item->Name, null, 3);
+	lst->nowPlaying = item;
+	insertLast(lst, item);
 }
 
 //insert item at the first location
