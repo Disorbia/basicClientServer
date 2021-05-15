@@ -14,6 +14,7 @@
 #include "list.h"
 
 int clientCount = 0;
+int running = 1;
 
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
@@ -27,9 +28,9 @@ struct client{
 };
 
 struct client Client[1024];
+FILE *queue_file;
 pthread_t thread[1024];
 pthread_t player;
-
 
 char * getNowPlaying(song_list *songs){
 	char *nowMsg = (char*) malloc(60 * sizeof(char));
@@ -61,25 +62,37 @@ void * songPlayer(void * songs_l){
 	struct song_list* songs_queue =(song_list*) songs_l;
 	int timer = 0;
 		while(1){
-		int skip = songs_queue->skip;
 		int play = songs_queue->play;
 			sleep(1);
 			if(songs_queue->nowPlaying == songs_queue->tail && !strcmp(songs_queue->nowPlaying->Name ,null)){ //Waiting for a new queue
 				timer = SONG_TIME;
 				continue;
 			}
-			if(timer == SONG_TIME || skip){
-				if(songs_queue->nowPlaying == songs_queue->tail)
+			if(timer == SONG_TIME || songs_queue->skip){
+				if(songs_queue->nowPlaying == songs_queue->tail){
 					insertNULL(songs_queue);
-				else
+					fprintf(queue_file, "No Song\n");
+				}
+				else{
 					songs_queue->nowPlaying = songs_queue->nowPlaying->next;
+					fprintf(queue_file, "%s by User %d\n", songs_queue->nowPlaying->Name, songs_queue->nowPlaying->User);
 
+				}
 				timer = 0;
-				skip = 0;
+				songs_queue->skip = 0;
 			}
 			else if(play)
 				timer++;
 		}
+}
+
+void SIGINIT_handler(){
+	fclose(queue_file);
+	for(int i = 0 ; i < clientCount ; i ++)
+		pthread_exit(thread[i]);
+	pthread_exit(player);
+	printf("Goodbye!\n");
+	running = 0;
 }
 
 void * doNetworking(void * ClientDetail){
@@ -99,10 +112,9 @@ void * doNetworking(void * ClientDetail){
 		int read = recv(clientSocket,data,1024,0);//Wait for client choice		
 		data[read] = '\0';
 		if(!strncmp(data, QUEUE, 5)){
-			read = recv(clientSocket,data,40,0);//Song name
+			read = recv(clientSocket,data,1024,0);//Song name
 			data[read] = '\0';
 			insertLast(clientDetail->songs, allocSong(clientDetail->index, data));
-			sleep(1);
 		}
 		else if(!strncmp(data,PLAY, 5)){
 			clientDetail->songs->play = 1;
@@ -123,7 +135,7 @@ void * doNetworking(void * ClientDetail){
 
 void main(){
 	song_list *songs_l = (song_list*) malloc(sizeof(song_list)); //Song Queue
-
+	queue_file = fopen("queue.txt", "a");
 	initList(songs_l); //Init queue
 	insertNULL(songs_l); //Insert an empty song
 
@@ -138,6 +150,8 @@ void main(){
 	struct sigaction sa;
     sa.sa_handler = SIG_IGN;
     sa.sa_flags = 0; // or SA_RESTART
+ 	signal(SIGINT, SIGINIT_handler);
+
     sigemptyset(&sa.sa_mask);
 
 	if(bind(serverSocket,(struct sockaddr *) &serverAddr , sizeof(serverAddr)) == -1)
@@ -150,7 +164,7 @@ void main(){
 
 	printf("Server started listenting on port 8080 ...........\n");
 
-	while(1){
+	while(running){
 
 		Client[clientCount].sockID = accept(serverSocket, (struct sockaddr*) &Client[clientCount].clientAddr, &Client[clientCount].len);
 		Client[clientCount].index = clientCount;
@@ -165,9 +179,5 @@ void main(){
 		clientCount ++;
  
 	}
-
-	for(int i = 0 ; i < clientCount ; i ++)
-		pthread_join(thread[i],NULL);
-	pthread_join(player, NULL);
 
 }
