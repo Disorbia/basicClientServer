@@ -9,7 +9,7 @@ all: server client
 	
 server:
 	$(CC) server.c -g -o server -lpthread list.c
-	./server
+	./server localhost 8080
 
 client:
 	$(CC) client.c -g -o client -lpthread

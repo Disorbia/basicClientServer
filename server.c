@@ -14,7 +14,6 @@
 #include "list.h"
 
 int clientCount = 0;
-int running = 1;
 
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
@@ -89,10 +88,11 @@ void * songPlayer(void * songs_l){
 void SIGINIT_handler(){
 	fclose(queue_file);
 	for(int i = 0 ; i < clientCount ; i ++)
-		pthread_exit(thread[i]);
-	pthread_exit(player);
-	printf("Goodbye!\n");
-	running = 0;
+		pthread_join(thread[i], NULL);
+	pthread_kill(player, SIGINT);
+	printf("\nGoodbye!\n");
+	exit(0);
+
 }
 
 void * doNetworking(void * ClientDetail){
@@ -133,7 +133,13 @@ void * doNetworking(void * ClientDetail){
 	}
 
 
-void main(){
+void main(int argc, char *argv[]){
+	if(argc < 3){
+		printf("usage is: ./server <ip_address> <port>\n");
+		exit(0);
+	}
+	int PORT = atoi(argv[2]);
+
 	song_list *songs_l = (song_list*) malloc(sizeof(song_list)); //Song Queue
 	queue_file = fopen("queue.txt", "a");
 	initList(songs_l); //Init queue
@@ -145,14 +151,17 @@ void main(){
 
 	serverAddr.sin_family = AF_INET;
 	serverAddr.sin_port = htons(PORT);
-	serverAddr.sin_addr.s_addr = htons(INADDR_ANY);
+	if(!strcmp(argv[1], "localhost"))
+		serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+ 	else
+		serverAddr.sin_addr.s_addr = inet_addr(argv[1]);
 
-	struct sigaction sa;
-    sa.sa_handler = SIG_IGN;
-    sa.sa_flags = 0; // or SA_RESTART
- 	signal(SIGINT, SIGINIT_handler);
+	struct sigaction sa_pipe;
+    sa_pipe.sa_handler = SIG_IGN;
+    sa_pipe.sa_flags = 0;
+    sigemptyset(&sa_pipe.sa_mask);//SIGPIPE
 
-    sigemptyset(&sa.sa_mask);
+ 	signal(SIGINT, SIGINIT_handler);//SIGINT
 
 	if(bind(serverSocket,(struct sockaddr *) &serverAddr , sizeof(serverAddr)) == -1)
 		perror("Error : Bind");
@@ -162,20 +171,19 @@ void main(){
 
 	pthread_create(&player, NULL, songPlayer, (void *) songs_l);
 
-	printf("Server started listenting on port 8080 ...........\n");
+	printf("Server started listenting on port %d ...........\n", PORT);
 
-	while(running){
+	while(1){
 
 		Client[clientCount].sockID = accept(serverSocket, (struct sockaddr*) &Client[clientCount].clientAddr, &Client[clientCount].len);
 		Client[clientCount].index = clientCount;
 		Client[clientCount].songs = songs_l;
-	    if (sigaction(SIGPIPE, &sa, NULL) == -1) {
+	    if (sigaction(SIGPIPE, &sa_pipe, NULL) == -1) {
 	        perror("SIGPIPE");
     	    exit(1);
     	}
 
 		pthread_create(&thread[clientCount], NULL, doNetworking, (void *) &Client[clientCount]);
-
 		clientCount ++;
  
 	}

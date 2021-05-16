@@ -6,10 +6,8 @@
 #define NEXT "-next" //5
 #define QUIT "-quit"
 
-/* SETTINGS */
-#define PORT 8080
-#define ADDRESS "localhost"
+/* SETTINGS */ 	
 #define MAX_CONN 5
 #define null "999"
-#define SONG_TIME 7
+#define SONG_TIME 15
  
